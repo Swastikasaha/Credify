@@ -42,7 +42,10 @@ class LoanInput(BaseModel):
 
 class PredictionResult(BaseModel):
     prediction: str
+def preprocess_input(input_data):
+    input_data['LoanAmount'] = input_data['LoanAmount']/1000
 
+    return input_data
 
 @app.get("/")
 async def root():
@@ -52,7 +55,11 @@ async def root():
 @app.post("/predict", response_model=PredictionResult)
 async def predict(input_data: LoanInput):
     # Convert input to 2D array
-    features = np.array([[ input_data.Gender,
+    input_data = input_data.model_dump()
+
+    processed = preprocess_input(input_data)
+
+    """features = np.array([[ input_data.Gender,
         input_data.Married,
         input_data.Dependents,
         input_data.Education,
@@ -63,7 +70,9 @@ async def predict(input_data: LoanInput):
         input_data.Loan_Amount_Term,
         input_data.Credit_History,
         input_data.Property_Area
-        ]])
+        ]])"""
+    
+    features = np.array([list(processed.values())])
 
     # Make prediction
     prediction = model.predict(features)[0]
